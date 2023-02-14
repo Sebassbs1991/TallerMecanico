@@ -1,28 +1,47 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using TallerMecanico.API.Datos;
 using TallerMecanico.API.Datos.Entidades;
 
 namespace TallerMecanico.API.Controllers
 {
-    public class TipoVehiculoController : Controller
+    public class ProcedimientosController : Controller
     {
         private readonly DataContext _context;
+        private DataContext context;
 
-        public TipoVehiculoController(DataContext context)
+        public ProcedimientosController(DataContext context
+            )
         {
             _context = context;
         }
 
-        // GET: TipoVehiculo
         public async Task<IActionResult> Index()
         {
-            return View(await _context.TipoVehiculos.ToListAsync());
+            return View(await _context.Procedimientos.ToListAsync());
         }
 
+        // GET: TipoVehiculo/Details/5
+        public async Task<IActionResult> Details(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
 
+            var tipoVehiculo = await _context.TipoVehiculos
+                .FirstOrDefaultAsync(m => m.Id == id);
+            if (tipoVehiculo == null)
+            {
+                return NotFound();
+            }
+
+            return View(tipoVehiculo);
+        }
 
         // GET: TipoVehiculo/Create
         public IActionResult Create()
@@ -35,36 +54,14 @@ namespace TallerMecanico.API.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(TipoVehiculo tipoVehiculo)
+        public async Task<IActionResult> Create([Bind("Id,Descripcion")] TipoVehiculo tipoVehiculo)
         {
             if (ModelState.IsValid)
             {
-                try
-                {
-                    _context.Add(tipoVehiculo);
-                    await _context.SaveChangesAsync();
-                    return RedirectToAction(nameof(Index));
-                }
-                catch (DbUpdateException dbUpdateException)
-                {
-                    if (dbUpdateException.InnerException.Message.Contains("duplicate"))
-                    {
-                        ModelState.AddModelError(string.Empty, "Ya existe este tipo de vehículo.");
-                    }
-                    else
-                    {
-                        ModelState.AddModelError(string.Empty, dbUpdateException.InnerException.Message);
-                    }
-                }
-
-                catch (Exception exception)
-                {
-                    ModelState.AddModelError(string.Empty, exception.Message);
-                }
-
+                _context.Add(tipoVehiculo);
+                await _context.SaveChangesAsync();
+                return RedirectToAction(nameof(Index));
             }
-
-
             return View(tipoVehiculo);
         }
 
@@ -76,7 +73,7 @@ namespace TallerMecanico.API.Controllers
                 return NotFound();
             }
 
-            TipoVehiculo tipoVehiculo = await _context.TipoVehiculos.FindAsync(id);
+            var tipoVehiculo = await _context.TipoVehiculos.FindAsync(id);
             if (tipoVehiculo == null)
             {
                 return NotFound();
@@ -89,7 +86,7 @@ namespace TallerMecanico.API.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, TipoVehiculo tipoVehiculo)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Descripcion")] TipoVehiculo tipoVehiculo)
         {
             if (id != tipoVehiculo.Id)
             {
@@ -102,26 +99,19 @@ namespace TallerMecanico.API.Controllers
                 {
                     _context.Update(tipoVehiculo);
                     await _context.SaveChangesAsync();
-                    return RedirectToAction(nameof(Index));
                 }
-                catch (DbUpdateException dbUpdateException)
+                catch (DbUpdateConcurrencyException)
                 {
-                    if (dbUpdateException.InnerException.Message.Contains("duplicate"))
+                    if (!TipoVehiculoExists(tipoVehiculo.Id))
                     {
-                        ModelState.AddModelError(string.Empty, "Ya existe este tipo de vehículo.");
+                        return NotFound();
                     }
                     else
                     {
-                        ModelState.AddModelError(string.Empty, dbUpdateException.InnerException.Message);
+                        throw;
                     }
                 }
-
-                catch (Exception exception)
-                {
-                    ModelState.AddModelError(string.Empty, exception.Message);
-                }
-
-
+                return RedirectToAction(nameof(Index));
             }
             return View(tipoVehiculo);
         }
@@ -134,20 +124,31 @@ namespace TallerMecanico.API.Controllers
                 return NotFound();
             }
 
-            TipoVehiculo tipoVehiculo = await _context.TipoVehiculos
+            var tipoVehiculo = await _context.TipoVehiculos
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (tipoVehiculo == null)
             {
                 return NotFound();
             }
 
+            return View(tipoVehiculo);
+        }
+
+        // POST: TipoVehiculo/Delete/5
+        [HttpPost, ActionName("Delete")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteConfirmed(int id)
+        {
+            var tipoVehiculo = await _context.TipoVehiculos.FindAsync(id);
             _context.TipoVehiculos.Remove(tipoVehiculo);
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 
-        // POST: TipoVehiculo/Delete/5
-
+        private bool TipoVehiculoExists(int id)
+        {
+            return _context.TipoVehiculos.Any(e => e.Id == id);
+        }
 
 
     }
