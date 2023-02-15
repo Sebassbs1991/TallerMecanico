@@ -15,11 +15,13 @@ namespace TallerMecanico.API.Datos
 
         public DbSet<Procedimiento> Procedimientos { get; set; }
         public DbSet<TipoVehiculo> TipoVehiculos { get; set; }
+        public DbSet<TipoDocumento> TipoDocumentos { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
             modelBuilder.Entity<Procedimiento>().HasIndex(x => x.Descripcion).IsUnique();
             modelBuilder.Entity<TipoVehiculo>().HasIndex(x => x.Descripcion).IsUnique();
+            modelBuilder.Entity<TipoDocumento>().HasIndex(x => x.Descripcion).IsUnique();
         }
 
     }
