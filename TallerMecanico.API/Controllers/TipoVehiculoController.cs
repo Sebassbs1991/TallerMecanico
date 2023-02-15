@@ -16,6 +16,7 @@ namespace TallerMecanico.API.Controllers
             _context = context;
         }
 
+
         // GET: TipoVehiculo
         public async Task<IActionResult> Index()
         {
