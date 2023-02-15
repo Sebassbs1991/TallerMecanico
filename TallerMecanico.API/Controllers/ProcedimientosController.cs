@@ -1,8 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using TallerMecanico.API.Datos;
 using TallerMecanico.API.Datos.Entidades;
@@ -12,57 +10,63 @@ namespace TallerMecanico.API.Controllers
     public class ProcedimientosController : Controller
     {
         private readonly DataContext _context;
-        private DataContext context;
 
-        public ProcedimientosController(DataContext context
-            )
+        public ProcedimientosController(DataContext context)
         {
             _context = context;
         }
 
+
+        // GET: Procedimiento
         public async Task<IActionResult> Index()
         {
             return View(await _context.Procedimientos.ToListAsync());
         }
 
-        // GET: TipoVehiculo/Details/5
-        public async Task<IActionResult> Details(int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
 
-            var tipoVehiculo = await _context.TipoVehiculos
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (tipoVehiculo == null)
-            {
-                return NotFound();
-            }
 
-            return View(tipoVehiculo);
-        }
-
-        // GET: TipoVehiculo/Create
+        // GET: Procedimientos/Create
         public IActionResult Create()
         {
             return View();
         }
 
-        // POST: TipoVehiculo/Create
+        // POST: Procedimientos/Create
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Descripcion")] TipoVehiculo tipoVehiculo)
+        public async Task<IActionResult> Create(Procedimiento procedimiento)
         {
             if (ModelState.IsValid)
             {
-                _context.Add(tipoVehiculo);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                try
+                {
+                    _context.Add(procedimiento);
+                    await _context.SaveChangesAsync();
+                    return RedirectToAction(nameof(Index));
+                }
+                catch (DbUpdateException dbUpdateException)
+                {
+                    if (dbUpdateException.InnerException.Message.Contains("duplicate"))
+                    {
+                        ModelState.AddModelError(string.Empty, "Ya existe este procedimiento.");
+                    }
+                    else
+                    {
+                        ModelState.AddModelError(string.Empty, dbUpdateException.InnerException.Message);
+                    }
+                }
+
+                catch (Exception exception)
+                {
+                    ModelState.AddModelError(string.Empty, exception.Message);
+                }
+
             }
-            return View(tipoVehiculo);
+
+
+            return View(procedimiento);
         }
 
         // GET: TipoVehiculo/Edit/5
@@ -73,12 +77,12 @@ namespace TallerMecanico.API.Controllers
                 return NotFound();
             }
 
-            var tipoVehiculo = await _context.TipoVehiculos.FindAsync(id);
-            if (tipoVehiculo == null)
+            Procedimiento procedimiento = await _context.Procedimientos.FindAsync(id);
+            if (procedimiento == null)
             {
                 return NotFound();
             }
-            return View(tipoVehiculo);
+            return View(procedimiento);
         }
 
         // POST: TipoVehiculo/Edit/5
@@ -86,9 +90,9 @@ namespace TallerMecanico.API.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Descripcion")] TipoVehiculo tipoVehiculo)
+        public async Task<IActionResult> Edit(int id, Procedimiento procedimiento)
         {
-            if (id != tipoVehiculo.Id)
+            if (id != procedimiento.Id)
             {
                 return NotFound();
             }
@@ -97,23 +101,30 @@ namespace TallerMecanico.API.Controllers
             {
                 try
                 {
-                    _context.Update(tipoVehiculo);
+                    _context.Update(procedimiento);
                     await _context.SaveChangesAsync();
+                    return RedirectToAction(nameof(Index));
                 }
-                catch (DbUpdateConcurrencyException)
+                catch (DbUpdateException dbUpdateException)
                 {
-                    if (!TipoVehiculoExists(tipoVehiculo.Id))
+                    if (dbUpdateException.InnerException.Message.Contains("duplicate"))
                     {
-                        return NotFound();
+                        ModelState.AddModelError(string.Empty, "Ya existe este tipo de vehículo.");
                     }
                     else
                     {
-                        throw;
+                        ModelState.AddModelError(string.Empty, dbUpdateException.InnerException.Message);
                     }
                 }
-                return RedirectToAction(nameof(Index));
+
+                catch (Exception exception)
+                {
+                    ModelState.AddModelError(string.Empty, exception.Message);
+                }
+
+
             }
-            return View(tipoVehiculo);
+            return View(procedimiento);
         }
 
         // GET: TipoVehiculo/Delete/5
@@ -124,31 +135,20 @@ namespace TallerMecanico.API.Controllers
                 return NotFound();
             }
 
-            var tipoVehiculo = await _context.TipoVehiculos
+            Procedimiento procedimiento = await _context.Procedimientos
                 .FirstOrDefaultAsync(m => m.Id == id);
-            if (tipoVehiculo == null)
+            if (procedimiento == null)
             {
                 return NotFound();
             }
 
-            return View(tipoVehiculo);
-        }
-
-        // POST: TipoVehiculo/Delete/5
-        [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id)
-        {
-            var tipoVehiculo = await _context.TipoVehiculos.FindAsync(id);
-            _context.TipoVehiculos.Remove(tipoVehiculo);
+            _context.Procedimientos.Remove(procedimiento);
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 
-        private bool TipoVehiculoExists(int id)
-        {
-            return _context.TipoVehiculos.Any(e => e.Id == id);
-        }
+        // POST: Procedimiento/Delete/5
+
 
 
     }

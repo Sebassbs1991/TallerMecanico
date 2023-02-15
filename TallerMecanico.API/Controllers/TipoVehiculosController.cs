@@ -7,14 +7,15 @@ using TallerMecanico.API.Datos.Entidades;
 
 namespace TallerMecanico.API.Controllers
 {
-    public class TipoVehiculoController : Controller
+    public class TipoVehiculosController : Controller
     {
         private readonly DataContext _context;
 
-        public TipoVehiculoController(DataContext context)
+        public TipoVehiculosController(DataContext context)
         {
             _context = context;
         }
+
 
         // GET: TipoVehiculo
         public async Task<IActionResult> Index()
