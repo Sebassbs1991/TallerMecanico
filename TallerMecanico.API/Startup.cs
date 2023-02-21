@@ -1,10 +1,13 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using TallerMecanico.API.Ayudadores;
 using TallerMecanico.API.Datos;
+using TallerMecanico.API.Datos.Entidades;
 
 namespace TallerMecanico.API
 {
@@ -21,12 +24,29 @@ namespace TallerMecanico.API
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllersWithViews();
+
+            services.AddIdentity<Usuario, IdentityRole>(x =>
+                {
+                    x.User.RequireUniqueEmail = true;
+                    x.Password.RequireDigit = false;
+                    x.Password.RequiredUniqueChars = 0;
+                    x.Password.RequireLowercase = false;
+                    x.Password.RequireNonAlphanumeric = false;
+                    x.Password.RequireUppercase = false;
+                    //x.Password.RequiredLength = 6;
+                    
+
+                })
+
+                .AddEntityFrameworkStores<DataContext>();
+
             services.AddDbContext<DataContext>(x =>
             {
                 x.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"));
             });
 
             services.AddTransient<CargarInfo>();
+            services.AddScoped<IUserHelper, UserHelper>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -44,7 +64,7 @@ namespace TallerMecanico.API
             }
             app.UseHttpsRedirection();
             app.UseStaticFiles();
-
+            app.UseAuthentication();
             app.UseRouting();
 
             app.UseAuthorization();
